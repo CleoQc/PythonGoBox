@@ -30,26 +30,57 @@ def readKey():
     return ord(ch)
 
 
+PORTS={"A1":gopigo.analogPort,"D11":gopigo.digitalPort}
 
 class Sensor():
-    def __init__(self, pin):
-        self.pin=0
-        if pin == "A1":
-            self.pin=0
-#            print ("Setting port to A1")
-            gopigo.pinMode(gopigo.analogPort,"INPUT")
-        if pin == "D11":
-            self.pin=1
-#            print ("Setting port to D11")
-            gopigo.pinMode(dgopigo.igitalPort,"INPUT")
+    def __init__(self, port, pinmode):
+        '''
+        port = one of PORTS keys
+        pinmode = "INPUT", "OUTPUT"
+        '''
+        print "Sensor init" 
+        self.port=port
+        self.portID=PORTS[self.port]
+        self.pinmode=pinmode
+ 
+    def setPort(self,port):
+        self.port=port
+        self.portID =PORTS[self.port]
+    def getPort(self):
+        return (self.port)
+    def getPortID(self):
+        return (self.portID)
+    def setPinMode(self,pinmode):
+        self.pinmode=pinmode
+    def getPinMode(self):
+        return (self.pinmode)
+    def isAnalog(self):
+        return (self.pin == ANALOG)
+    def isDigital(self):
+        return (self.pin == DIGITAL)
+
+
+class DigitalSensor(Sensor):
+    def __init__(self,pin):
+        print "DigitalSensor init" 
+        self.setPinMode="INPUT"
 
     def read(self):
-        if self.pin == 0: 
-            return gopigo.analogRead(gopigo.analogPort)
-        if self.pin == 1: 
-            return gopigo.digitalRead(gopigo.digitalPort)
+        if self.pin == DIGITAL: 
+            return gopigo.digitalRead(self.getPortID())
 
-class LightSensor(Sensor):
+class AnalogSensor(Sensor):
+    def __init__(self,port):
+        print "AnalogSensor init" 
+        self.setPort(port) # "A1"
+        self.setPinMode("INPUT")
+        print (self.getPortID(), self.getPinMode())
+        gopigo.pinMode(self.getPortID(),self.getPinMode())
+
+    def read(self):
+        return gopigo.analogRead(self.getPortID())
+        
+class LightSensor(AnalogSensor):
     """
     Creates a light sensor from which we can read.
     Light sensor is by default on pin A1(A-one)
@@ -57,8 +88,10 @@ class LightSensor(Sensor):
 	     takes a value of 1 when on digital pin
              D11 is used here to match what is written on the board
     """
-    def __init__(self, pin="A1"):
-        Sensor.__init__(self,pin)
+    def __init__(self, port="A1"):
+        print "LightSensor init" 
+        AnalogSensor.__init__(self, port)
+ 
 
 
    
