@@ -5,10 +5,15 @@ import sys
 import tty
 import termios
 import gopigo
-import time
 
 old_settings=''
 fd=''
+gpg_debug = False
+
+##########################
+def debug(in_str):
+    if gpg_debug:
+        print(in_str)
 
 ##########################
 def readKey():
@@ -38,7 +43,7 @@ class Sensor():
         port = one of PORTS keys
         pinmode = "INPUT", "OUTPUT"
         '''
-        print "Sensor init" 
+        debug ("Sensor init" )
         self.port=port
         self.portID=PORTS[self.port]
         self.pinmode=pinmode
@@ -62,7 +67,7 @@ class Sensor():
 
 class DigitalSensor(Sensor):
     def __init__(self,pin):
-        print "DigitalSensor init" 
+        debug ("DigitalSensor init" )
         self.setPinMode="INPUT"
 
     def read(self):
@@ -71,10 +76,10 @@ class DigitalSensor(Sensor):
 
 class AnalogSensor(Sensor):
     def __init__(self,port):
-        print "AnalogSensor init" 
+        debug( "AnalogSensor init" )
         self.setPort(port) # "A1"
         self.setPinMode("INPUT")
-        print (self.getPortID(), self.getPinMode())
+        debug (str(self.getPortID())+", " +str(self.getPinMode()))
         gopigo.pinMode(self.getPortID(),self.getPinMode())
 
     def read(self):
@@ -89,7 +94,7 @@ class LightSensor(AnalogSensor):
              D11 is used here to match what is written on the board
     """
     def __init__(self, port="A1"):
-        print "LightSensor init" 
+        debug ("LightSensor init" )
         AnalogSensor.__init__(self, port)
  
 
