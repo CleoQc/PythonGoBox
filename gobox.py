@@ -34,8 +34,10 @@ def readKey():
         raise KeyboardInterrupt
     return ord(ch)
 
-
-PORTS={"A1":gopigo.analogPort,"D11":gopigo.digitalPort}
+try:
+    PORTS={"A1":gopigo.analogPort,"D11":gopigo.digitalPort}
+except:
+    PORTS={"A1":15,"D11":10}
 
 class Sensor():
     def __init__(self, port, pinmode):
@@ -98,5 +100,11 @@ class LightSensor(AnalogSensor):
         AnalogSensor.__init__(self, port)
  
 
-
+class SoundSensor(AnalogSensor):
+    """
+    Creates a a sound sensor
+    """
    
+    def __init__(self,port="A1"):
+        debug ("Sound Sensor on port "+port)
+        AnalogSensor.__init__(self,port)
