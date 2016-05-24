@@ -4,6 +4,7 @@
 import sys
 import tty
 import termios
+import select
 import gopigo
 
 old_settings=''
@@ -15,30 +16,56 @@ def debug(in_str):
     if gpg_debug:
         print(in_str)
 
-##########################
-def readKey():
-    """
-       blocking method to get one character input from keyb
-    """
-    global old_settings
-    global fd
-    fd = sys.stdin.fileno()
 
-    old_settings = termios.tcgetattr(fd)
-    try:
+##########################
+class KeyPoller():
+    def __enter__(self):
+        print "enter fct"
+        # Save the terminal settings
+        self.fd = sys.stdin.fileno()
+        self.new_term = termios.tcgetattr(self.fd)
+        self.old_term = termios.tcgetattr(self.fd)
+
+        # New terminal setting unbuffered
+        self.new_term[3] = (self.new_term[3] & ~termios.ICANON & ~termios.ECHO)
+        termios.tcsetattr(self.fd, termios.TCSAFLUSH, self.new_term)
+
+        return self
+
+    def __exit__(self, type, value, traceback):
+        print "exit fct"
+        termios.tcsetattr(self.fd, termios.TCSAFLUSH, self.old_term)
+
+    def poll(self):
+        """
+           non-blocking method to get one character input from keyb
+        """
+        dr,dw,de = select.select([sys.stdin], [], [], 0)
+        if not dr == []:
+            return sys.stdin.read(1)
+        return None
+
+    def readKey(self):
+        """
+           blocking method to get one character input from keyb
+        """
+        print "readKey fct"
         tty.setraw(sys.stdin.fileno())
         ch = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    if ord(ch) == 3 or ord(ch) == 0x1b:  # detect Ctrl C or ESC
-        raise KeyboardInterrupt
-    return ord(ch)
+        if ord(ch) == 3 or ord(ch) == 0x1b: # detect CtrlC or ESC
+            raise KeyboardInterrupt
+        return ch
 
+#############################################################
+# the followin is in a try/except structure because it depends 
+# on the date of gopigo.py
+#############################################################
 try:
     PORTS={"A1":gopigo.analogPort,"D11":gopigo.digitalPort}
 except:
     PORTS={"A1":15,"D11":10}
 
+##########################
 class Sensor():
     def __init__(self, port, pinmode):
         '''
@@ -67,6 +94,7 @@ class Sensor():
         return (self.pin == DIGITAL)
 
 
+##########################
 class DigitalSensor(Sensor):
     def __init__(self,pin):
         debug ("DigitalSensor init" )
@@ -76,6 +104,7 @@ class DigitalSensor(Sensor):
         if self.pin == DIGITAL: 
             return gopigo.digitalRead(self.getPortID())
 
+##########################
 class AnalogSensor(Sensor):
     def __init__(self,port):
         debug( "AnalogSensor init" )
@@ -87,6 +116,7 @@ class AnalogSensor(Sensor):
     def read(self):
         return gopigo.analogRead(self.getPortID())
         
+##########################
 class LightSensor(AnalogSensor):
     """
     Creates a light sensor from which we can read.
@@ -100,6 +130,7 @@ class LightSensor(AnalogSensor):
         AnalogSensor.__init__(self, port)
  
 
+##########################
 class SoundSensor(AnalogSensor):
     """
     Creates a a sound sensor
