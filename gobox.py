@@ -110,11 +110,22 @@ class AnalogSensor(Sensor):
         debug( "AnalogSensor init" )
         self.setPort(port) # "A1"
         self.setPinMode("INPUT")
+        self.value = 0
         debug (str(self.getPortID())+", " +str(self.getPinMode()))
         gopigo.pinMode(self.getPortID(),self.getPinMode())
 
     def read(self):
         return gopigo.analogRead(self.getPortID())
+        
+    def write(self, power):
+        return gopigo.analogWrite(self.getPortID(),power)
+    
+    def set_value(self,value):
+        self.value = value
+        return self.value
+
+    def get_value(self):
+        return self.value
         
 ##########################
 class LightSensor(AnalogSensor):
@@ -122,8 +133,8 @@ class LightSensor(AnalogSensor):
     Creates a light sensor from which we can read.
     Light sensor is by default on pin A1(A-one)
     self.pin takes a value of 0 when on analog pin (default value)
-	     takes a value of 1 when on digital pin
-             D11 is used here to match what is written on the board
+        takes a value of 1 when on digital pin
+    D11 is used here to match what is written on the board
     """
     def __init__(self, port="A1"):
         debug ("LightSensor init" )
@@ -139,3 +150,26 @@ class SoundSensor(AnalogSensor):
     def __init__(self,port="A1"):
         debug ("Sound Sensor on port "+port)
         AnalogSensor.__init__(self,port)
+  
+##########################      
+class UltraSonicSensor(AnalogSensor):
+    def __init__(self,port="A1"):
+        debug ("Ultrasonic Sensor on port"+port)
+        AnalogSensor.__init__(self,port)
+        print PORTS[port]
+        
+    def distance(self):
+        return gopigo.us_dist(PORTS[port])
+
+##########################
+class Buzzer(AnalogSensor):
+    def __init__(self,port="A1"):
+        AnalogSensor.__init__(self,port)
+        
+    def sound(self,power):
+        self.set_value(power)
+        AnalogSensor.write(self,power)
+        
+    def soundoff(self):
+        AnalogSensor.write(self,0)
+##########################
