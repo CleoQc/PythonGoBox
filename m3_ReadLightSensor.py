@@ -2,9 +2,6 @@
 # helper libraries
 import gobox
 import time
-import sys
-
-
 
 # create a software version of the LightSensor so we can interact with it
 light = gobox.LightSensor()
