@@ -156,7 +156,7 @@ class UltraSonicSensor(AnalogSensor):
     def __init__(self,port="A1"):
         debug ("Ultrasonic Sensor on port"+port)
         AnalogSensor.__init__(self,port)
-        print PORTS[port]
+        debug( PORTS[port])
         
     def distance(self):
         return gopigo.us_dist(PORTS[port])
