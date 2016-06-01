@@ -16,6 +16,13 @@ def debug(in_str):
     if gpg_debug:
         print(in_str)
 
+##########################
+# Ensure compatibility with Python 2 and 3
+##########################
+try:
+    input = raw_input
+except NameError:
+    pass
 
 ##########################
 class KeyPoller():
@@ -163,10 +170,18 @@ class UltraSonicSensor(AnalogSensor):
 
 ##########################
 class Buzzer(AnalogSensor):
-    def __init__(self,port="A1"):
+    def __init__(self,port="D11"):
         AnalogSensor.__init__(self,port)
         
     def sound(self,power):
+        # sound will accept either a string or a numeric value
+        # if power can't be cast to an int, then turn buzzer off
+        debug(type(power))
+        try:
+            power = int(power)
+        except:
+            power = 0
+        debug(type(power))
         self.set_value(power)
         AnalogSensor.write(self,power)
         
