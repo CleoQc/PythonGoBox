@@ -20,7 +20,7 @@ def debug(in_str):
 ##########################
 class KeyPoller():
     def __enter__(self):
-        print "enter fct"
+        debug ("enter fct")
         # Save the terminal settings
         self.fd = sys.stdin.fileno()
         self.new_term = termios.tcgetattr(self.fd)
@@ -33,7 +33,7 @@ class KeyPoller():
         return self
 
     def __exit__(self, type, value, traceback):
-        print "exit fct"
+        debug ("exit fct")
         termios.tcsetattr(self.fd, termios.TCSAFLUSH, self.old_term)
 
     def poll(self):
@@ -49,7 +49,7 @@ class KeyPoller():
         """
            blocking method to get one character input from keyb
         """
-        print "readKey fct"
+        debug ("readKey fct")
         tty.setraw(sys.stdin.fileno())
         ch = sys.stdin.read(1)
         if ord(ch) == 3 or ord(ch) == 0x1b: # detect CtrlC or ESC
@@ -156,7 +156,7 @@ class UltraSonicSensor(AnalogSensor):
     def __init__(self,port="A1"):
         debug ("Ultrasonic Sensor on port"+port)
         AnalogSensor.__init__(self,port)
-        print PORTS[port]
+        debut( PORTS[port])
         
     def distance(self):
         return gopigo.us_dist(PORTS[port])
