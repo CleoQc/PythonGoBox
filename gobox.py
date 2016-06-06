@@ -188,3 +188,13 @@ class Buzzer(AnalogSensor):
     def soundoff(self):
         AnalogSensor.write(self,0)
 ##########################
+
+class Led(AnalogSensor):
+    def __init__(self,port="D11"):
+        AnalogSensor.__init__(self,port)
+        
+    def turnon(self,power):
+        AnalogSensor.write(self,power)
+        
+    def turnoff(self):
+        AnalogSensor.write(self,0)
