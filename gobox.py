@@ -9,7 +9,7 @@ import gopigo
 
 old_settings=''
 fd=''
-gpg_debug = False
+gpg_debug = True
 
 ##########################
 def debug(in_str):
@@ -24,45 +24,6 @@ try:
 except NameError:
     pass
 
-##########################
-class KeyPoller():
-    def __enter__(self):
-        debug ("enter fct")
-        # Save the terminal settings
-        self.fd = sys.stdin.fileno()
-        self.new_term = termios.tcgetattr(self.fd)
-        self.old_term = termios.tcgetattr(self.fd)
-
-        # New terminal setting unbuffered
-        self.new_term[3] = (self.new_term[3] & ~termios.ICANON & ~termios.ECHO)
-        termios.tcsetattr(self.fd, termios.TCSAFLUSH, self.new_term)
-
-        return self
-
-    def __exit__(self, type, value, traceback):
-        debug ("exit fct")
-        termios.tcsetattr(self.fd, termios.TCSAFLUSH, self.old_term)
-
-    def poll(self):
-        """
-           non-blocking method to get one character input from keyb
-        """
-        dr,dw,de = select.select([sys.stdin], [], [], 0)
-        if not dr == []:
-            return sys.stdin.read(1)
-        return None
-
-    def readKey(self):
-        """
-           blocking method to get one character input from keyb
-        """
-        debug ("readKey fct")
-        tty.setraw(sys.stdin.fileno())
-        ch = sys.stdin.read(1)
-        if ord(ch) == 3 or ord(ch) == 0x1b: # detect CtrlC or ESC
-            raise KeyboardInterrupt
-        return ch
-
 #############################################################
 # the followin is in a try/except structure because it depends 
 # on the date of gopigo.py
@@ -72,6 +33,9 @@ try:
 except:
     PORTS={"A1":15,"D11":10}
 
+ANALOG = 1
+DIGITAL = 0
+
 ##########################
 class Sensor():
     def __init__(self, port, pinmode):
@@ -80,9 +44,10 @@ class Sensor():
         pinmode = "INPUT", "OUTPUT"
         '''
         debug ("Sensor init" )
-        self.port=port
-        self.portID=PORTS[self.port]
-        self.pinmode=pinmode
+        debug(pinmode)
+        self.setPort(port)
+        self.setPinMode(pinmode)
+        gopigo.pinMode(self.getPortID(),self.getPinMode())
  
     def setPort(self,port):
         self.port=port
@@ -103,36 +68,30 @@ class Sensor():
 
 ##########################
 class DigitalSensor(Sensor):
-    def __init__(self,pin):
+    def __init__(self,port,pinmode):
         debug ("DigitalSensor init" )
-        self.setPinMode="INPUT"
+        self.pin = DIGITAL
+        Sensor.__init__(self,port,pinmode)
 
     def read(self):
-        if self.pin == DIGITAL: 
-            return gopigo.digitalRead(self.getPortID())
+        return str(gopigo.digitalRead(self.getPortID()))
 
 ##########################
 class AnalogSensor(Sensor):
-    def __init__(self,port):
+    def __init__(self,port,pinmode):
         debug( "AnalogSensor init" )
-        self.setPort(port) # "A1"
-        self.setPinMode("INPUT")
         self.value = 0
-        debug (str(self.getPortID())+", " +str(self.getPinMode()))
-        gopigo.pinMode(self.getPortID(),self.getPinMode())
+        self.pin = ANALOG
+        Sensor.__init__(self,port,pinmode)
 
     def read(self):
-        return gopigo.analogRead(self.getPortID())
+        self.value = gopigo.analogRead(self.getPortID())
+        return self.value
         
     def write(self, power):
+        self.value = power
         return gopigo.analogWrite(self.getPortID(),power)
     
-    def set_value(self,value):
-        self.value = value
-        return self.value
-
-    def get_value(self):
-        return self.value
         
 ##########################
 class LightSensor(AnalogSensor):
@@ -145,7 +104,7 @@ class LightSensor(AnalogSensor):
     """
     def __init__(self, port="A1"):
         debug ("LightSensor init" )
-        AnalogSensor.__init__(self, port)
+        AnalogSensor.__init__(self, port,"INPUT")
  
 
 ##########################
@@ -156,13 +115,13 @@ class SoundSensor(AnalogSensor):
    
     def __init__(self,port="A1"):
         debug ("Sound Sensor on port "+port)
-        AnalogSensor.__init__(self,port)
+        AnalogSensor.__init__(self,port,"INPUT")
   
 ##########################      
 class UltraSonicSensor(AnalogSensor):
     def __init__(self,port="A1"):
         debug ("Ultrasonic Sensor on port"+port)
-        AnalogSensor.__init__(self,port)
+        AnalogSensor.__init__(self,port,"INPUT")
         debug( PORTS[port])
         
     def distance(self):
@@ -171,7 +130,7 @@ class UltraSonicSensor(AnalogSensor):
 ##########################
 class Buzzer(AnalogSensor):
     def __init__(self,port="D11"):
-        AnalogSensor.__init__(self,port)
+        AnalogSensor.__init__(self,port,"OUTPUT")
         
     def sound(self,power):
         # sound will accept either a string or a numeric value
@@ -187,14 +146,33 @@ class Buzzer(AnalogSensor):
         
     def soundoff(self):
         AnalogSensor.write(self,0)
+        
+        
 ##########################
-
 class Led(AnalogSensor):
     def __init__(self,port="D11"):
-        AnalogSensor.__init__(self,port)
+        AnalogSensor.__init__(self,port,"OUTPUT")
+        self.power = 0  # current power level being fed 
         
     def turnon(self,power):
         AnalogSensor.write(self,power)
+        self.value = power
         
     def turnoff(self):
         AnalogSensor.write(self,0)
+        
+    def ison(self):
+        return (self.value>0)
+    
+    def isoff(self):
+        return (self.value==0)
+        
+
+##########################
+class MotionSensor(DigitalSensor):
+    def __init__(self,port="D11"):
+        DigitalSensor.__init__(self,port,"INPUT")
+        
+
+
+
