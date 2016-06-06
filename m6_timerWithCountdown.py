@@ -33,16 +33,23 @@ countdown = 10 if how_long > 10 else how_long
 # wait till we're 10 seconds before the end
 time.sleep(how_long-countdown if how_long > 10 else 0 )
 
-# do a countdown from countdown
+# do a countdown from the value of 'countdown' down to zero
 for i in range(countdown,0,-1):
     print(i)
     mybuzzer.sound(5)
     time.sleep(0.01)
     mybuzzer.soundoff()
     time.sleep(1)
-
+    
+    
+# sound the alarm by buzzing for 5 seconds
+# then be quiet for one second
+# and do that five times
+# you could choose to do this forever instead
+# by using a while True: statement
 for i in range(5):
     mybuzzer.sound(254)
+    gopigo.left_rot()
     time.sleep(5)
     mybuzzer.soundoff()
     time.sleep(1)
