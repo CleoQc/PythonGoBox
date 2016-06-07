@@ -154,11 +154,11 @@ class Led(AnalogSensor):
         AnalogSensor.__init__(self,port,"OUTPUT")
         self.power = 0  # current power level being fed 
         
-    def turnon(self,power):
+    def lighton(self,power):
         AnalogSensor.write(self,power)
         self.value = power
         
-    def turnoff(self):
+    def lightoff(self):
         AnalogSensor.write(self,0)
         
     def ison(self):
