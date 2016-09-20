@@ -1,5 +1,4 @@
-import gobox
-import gopigo
+import easygopigo
 import atexit
 import time
 import pprint  # this is called pretty print, and allows for better printing

@@ -25,7 +25,7 @@ except NameError:
     pass
 
 #############################################################
-# the followin is in a try/except structure because it depends 
+# the following is in a try/except structure because it depends 
 # on the date of gopigo.py
 #############################################################
 try:
@@ -120,12 +120,12 @@ class SoundSensor(AnalogSensor):
 ##########################      
 class UltraSonicSensor(AnalogSensor):
     def __init__(self,port="A1"):
-        debug ("Ultrasonic Sensor on port"+port)
+        debug ("Ultrasonic Sensor on port "+port)
         AnalogSensor.__init__(self,port,"INPUT")
         debug( PORTS[port])
         
-    def distance(self):
-        return gopigo.us_dist(PORTS[port])
+    def read(self):
+        return gopigo.us_dist(PORTS[self.port])
 
 ##########################
 class Buzzer(AnalogSensor):

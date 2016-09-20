@@ -1,5 +1,4 @@
-import gobox
-import gopigo
+import easygopigo
 import atexit
 import time
 
@@ -8,7 +7,7 @@ def cleanuo():
    print("Good bye!")
    gopigo.stop()
 
-mySoundSensor=gobox.SoundSensor()
+mySoundSensor=easygopigo.SoundSensor()
 
 while True:
     soundValue = mySoundSensor.read()

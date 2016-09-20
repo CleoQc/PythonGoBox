@@ -1,5 +1,4 @@
-import gobox
-import gopigo
+import easygopigo
 import atexit
 
 @atexit.register
@@ -9,7 +8,7 @@ def cleanup():
 
 
 # Create a Sound Sensor variable
-mySoundSensor = gobox.SoundSensor()
+mySoundSensor = easygopigo.SoundSensor()
 
 # Set desired threshold
 myThreshold=50
