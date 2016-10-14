@@ -9,7 +9,7 @@ import gopigo
 
 old_settings=''
 fd=''
-gpg_debug = True
+gpg_debug = False
 
 ##########################
 def debug(in_str):
@@ -172,6 +172,10 @@ class Led(AnalogSensor):
 class MotionSensor(DigitalSensor):
     def __init__(self,port="D11"):
         DigitalSensor.__init__(self,port,"INPUT")
+
+    def read(self):
+	value = DigitalSensor.read(self)
+	return int(value)
         
 
 
