@@ -1,14 +1,14 @@
-import easygopigo
+from easygopigo import *
 import atexit
 
 @atexit.register
 def cleanup():
-    gopigo.stop()
+    stop()
     print("good bye!")
 
 
 # Create a Sound Sensor variable
-mySoundSensor = easygopigo.SoundSensor()
+mySoundSensor = SoundSensor()
 
 # Set desired threshold
 myThreshold=50
@@ -20,7 +20,7 @@ while True:
 
     # if above threshold, then go on attack mode !
     if mySoundLevel > myThreshold:
-        gopigo.fwd()
+        forward()
     else:
-        gopido.stop()
+        stop()
 

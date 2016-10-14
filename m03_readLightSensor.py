@@ -1,16 +1,16 @@
 
 # helper libraries
-import easygopigo
-import time
+from easygopigo import *
+from time import sleep
 
 # name the LightSensor so we can interact with it
-my_light = easygopigo.LightSensor()
+my_light = LightSensor()
 
 
 # let's create a loop that will print out the value of the light sensor
 # this will loop 20 times
 # this is the same as Scratch REPEAT 20 TIMES
-for i in range(0,20): 
+for i in range(20): 
     
     # access the light sensor, 
     # keep its value in a variable called sensorvalue
@@ -22,5 +22,5 @@ for i in range(0,20):
     
     # wait half a second
     # this is the same as Scratch WAIT command
-    time.sleep(0.5) 
+    sleep(0.5) 
     

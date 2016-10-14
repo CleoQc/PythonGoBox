@@ -1,15 +1,15 @@
-import easygopigo
+from easygopigo import *
+from time import sleep
 import atexit
-import time
 
 @atexit.register
 def cleanuo():
    print("Good bye!")
-   gopigo.stop()
+   stop()
 
-mySoundSensor=easygopigo.SoundSensor()
+mySoundSensor=SoundSensor()
 
 while True:
     soundValue = mySoundSensor.read()
     print(soundValue)
-    time.sleep(1)
+    sleep(1)

@@ -141,7 +141,6 @@ class Buzzer(AnalogSensor):
         except:
             power = 0
         debug(type(power))
-        self.set_value(power)
         AnalogSensor.write(self,power)
         
     def soundoff(self):
