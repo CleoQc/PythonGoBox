@@ -4,7 +4,7 @@ from easygopigo import *
 from time import sleep
 
 # name the LightSensor so we can interact with it
-my_light = LightSensor()
+my_light = LightSensor("A1")
 
 
 # let's create a loop that will print out the value of the light sensor
