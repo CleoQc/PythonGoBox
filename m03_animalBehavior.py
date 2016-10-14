@@ -20,6 +20,7 @@ def cleanup():
 my_light = LightSensor("A1")
 
 # this is the same as a Scratch forever loop
+print("To stop a forever loop, use Ctrl-C on your keyboard")
 while True:
 
         # we don't need to broadcast anything before reading the value
@@ -32,9 +33,7 @@ while True:
 
         # take decision to go forward or to stop
         if lightValue > 500:
-            # print ("Going Forward")
             forward()
         else:
-            # print ("Stopping") 
             stop()
 

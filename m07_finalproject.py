@@ -1,24 +1,20 @@
-import gobox
-import gopigo
-import time
+from easygopigo import *
+from gopigo import *
+from time import sleep
 import atexit
 
 @atexit.register
 def cleanup():
-    gopigo.stop()
-    giveAnswer()   # on exit, we want to give the answer via the LED
-    
-    
-# we create this function here that will output the answer
-# it will blink the led based on how many times the lights
-# were switched on
-def giveAnswer():
+    stop()
+    # we create the code here that will output the answer
+    # it will blink the led based on how many times the lights
+    # were switched on
     print ("giving the answer")
     for x in range(count):
         myled.lighton(255)
-        time.sleep(0.5)
+        sleep(0.5)
         myled.lightoff()
-        time.sleep(0.5)
+        sleep(0.5)
 
 # this is our variable that keeps count of how many times the lights were turned on
 count = 0  
@@ -30,10 +26,10 @@ state = 1
 threshold = 400
 
 # let's create a software light sensor
-mylightsensor = gobox.LightSensor()
+mylightsensor = LightSensor("A1")
 
 # and a software LED
-myled = gobox.Led()
+myled = Led()
 
 # loop forever
 # possible modification: loop for a certain number of times
@@ -42,7 +38,7 @@ while True:
     # wait a second before each loop
     # only real reason for this is so we can read the messages
     # that get printed to the screen
-    time.sleep(1) 
+    sleep(1) 
     
     # query the light sensor
     current_light_value = mylightsensor.read()
