@@ -172,9 +172,7 @@ class MotionSensor(DigitalSensor):
     def __init__(self,port="D11"):
         DigitalSensor.__init__(self,port,"INPUT")
 
-    def read(self):
-	value = DigitalSensor.read(self)
-	return int(value)
+
         
 
 
