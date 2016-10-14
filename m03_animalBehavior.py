@@ -17,7 +17,7 @@ def cleanup():
 # you get to name it. Right now its name is my_light
 # if you change that, you need to change it when reading it
 # REMINDER: the light sensor goes into Port A1
-my_light = LightSensor()
+my_light = LightSensor("A1")
 
 # this is the same as a Scratch forever loop
 while True:
