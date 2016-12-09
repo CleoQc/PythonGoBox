@@ -1,9 +1,10 @@
 #!/usr/bin/env python 
+from __future__ import print_function
+from __future__ import division
+from builtins import input
 
-# Reading single character by forcing stdin to raw mode
 import sys
 import tty
-import termios
 import select
 import gopigo
 
@@ -15,14 +16,6 @@ gpg_debug = False
 def debug(in_str):
     if gpg_debug:
         print(in_str)
-
-##########################
-# Ensure compatibility with Python 2 and 3
-##########################
-try:
-    input = raw_input
-except NameError:
-    pass
 
 #############################################################
 # the following is in a try/except structure because it depends 
@@ -38,6 +31,20 @@ DIGITAL = 0
 
 ##########################
 class Sensor():
+    '''
+    Base class for all sensors
+    Class Attributes:
+        port : string - user-readable port identification
+        portID : integer - actual port id
+        pinmode : "INPUT" or "OUTPUT"
+        pin : 1 for ANALOG, 0 for DIGITAL
+        descriptor = string to describe the sensor for printing purposes
+    Class methods:
+        setPort / getPort
+        setPinMode / getPinMode
+        isAnalog
+        isDigital
+    '''
     def __init__(self, port, pinmode):
         '''
         port = one of PORTS keys
@@ -48,6 +55,9 @@ class Sensor():
         self.setPort(port)
         self.setPinMode(pinmode)
         gopigo.pinMode(self.getPortID(),self.getPinMode())
+
+    def __str__(self):
+        return ("{} on port {}".format(self.descriptor,self.getPort()))
  
     def setPort(self,port):
         self.port=port
@@ -64,10 +74,15 @@ class Sensor():
         return (self.pin == ANALOG)
     def isDigital(self):
         return (self.pin == DIGITAL)
+    def set_descriptor(self,descriptor):
+        self.descriptor=descriptor
 
 
 ##########################
 class DigitalSensor(Sensor):
+    '''
+    Implements read and write methods
+    '''
     def __init__(self,port,pinmode):
         debug ("DigitalSensor init" )
         self.pin = DIGITAL
@@ -76,8 +91,15 @@ class DigitalSensor(Sensor):
     def read(self):
         return str(gopigo.digitalRead(self.getPortID()))
 
+    def write(self,power):
+        self.value = power
+        return gopigo.digitalWrite(self.getPortID(),power)       
+
 ##########################
 class AnalogSensor(Sensor):
+    '''
+    implements read and write methods
+    '''
     def __init__(self,port,pinmode):
         debug( "AnalogSensor init" )
         self.value = 0
@@ -100,42 +122,54 @@ class LightSensor(AnalogSensor):
     Light sensor is by default on pin A1(A-one)
     self.pin takes a value of 0 when on analog pin (default value)
         takes a value of 1 when on digital pin
-    D11 is used here to match what is written on the board
     """
     def __init__(self, port="A1"):
         debug ("LightSensor init" )
         AnalogSensor.__init__(self, port,"INPUT")
+        self.set_descriptor("Light sensor")
  
 
 ##########################
 class SoundSensor(AnalogSensor):
     """
-    Creates a a sound sensor
+    Creates a sound sensor
     """
    
     def __init__(self,port="A1"):
         debug ("Sound Sensor on port "+port)
         AnalogSensor.__init__(self,port,"INPUT")
+        self.set_descriptor("Sound sensor")
   
 ##########################      
 class UltraSonicSensor(AnalogSensor):
     def __init__(self,port="A1"):
         debug ("Ultrasonic Sensor on port "+port)
         AnalogSensor.__init__(self,port,"INPUT")
-        debug( PORTS[port])
+        self.set_descriptor("Ultrasonic sensor")
         
     def read(self):
         return gopigo.us_dist(PORTS[self.port])
 
 ##########################
 class Buzzer(AnalogSensor):
+    '''
+    The Buzzer class is a digital Sensor with power modulation (PWM). Default port is D11
+    Note that it inherits from AnalogSensor in order to support PWM
+    It has three methods:
+    sound(power)
+    soundoff() -> which is the same as sound(0)
+    soundon() -> which is the same as sound(254), max value
+    '''
     def __init__(self,port="D11"):
         AnalogSensor.__init__(self,port,"OUTPUT")
+        self.set_descriptor("Buzzer")
         
     def sound(self,power):
-        # sound will accept either a string or a numeric value
-        # if power can't be cast to an int, then turn buzzer off
-        debug(type(power))
+        '''
+        sound takes a power argument (from 0 to 254)
+        the power argument will accept either a string or a numeric value
+        if power can't be cast to an int, then turn buzzer off
+        '''
         try:
             power = int(power)
         except:
@@ -143,15 +177,24 @@ class Buzzer(AnalogSensor):
         debug(type(power))
         AnalogSensor.write(self,power)
         
-    def soundoff(self):
+    def sound_off(self):
+        '''
+        Makes buzzer silent
+        '''
         AnalogSensor.write(self,0)
+
+    def sound_on(self):
+        '''
+        Maximum buzzer sound
+        '''
+        AnalogSensor.write(self,254)
         
         
 ##########################
 class Led(AnalogSensor):
     def __init__(self,port="D11"):
         AnalogSensor.__init__(self,port,"OUTPUT")
-        self.power = 0  # current power level being fed 
+        self.set_descriptor("LED")
         
     def lighton(self,power):
         AnalogSensor.write(self,power)
@@ -171,9 +214,21 @@ class Led(AnalogSensor):
 class MotionSensor(DigitalSensor):
     def __init__(self,port="D11"):
         DigitalSensor.__init__(self,port,"INPUT")
+        self.set_descriptor("Motion Sensor")
 
 
         
 
-
+##########################
+if __name__ == '__main__':
+    import time
+    b = Buzzer()
+    print (b)
+    print ("Sounding buzzer")
+    b.sound_on()
+    time.sleep(1)
+    print ("buzzer off")
+    b.sound_off()
+    
+    
 
