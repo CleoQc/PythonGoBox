@@ -6,7 +6,7 @@ import atexit
 @atexit.register
 def cleanup():
     gopigo.stop
-    mybuzzer.soundoff()
+    mybuzzer.sound_off()
     
 # The following is just a trick to ensure compatibility between Python 2 and 3
 try:
@@ -38,7 +38,7 @@ for i in range(countdown,0,-1):
     print(i)
     mybuzzer.sound(5)
     time.sleep(0.01)
-    mybuzzer.soundoff()
+    mybuzzer.sound_off()
     time.sleep(1)
     
     
@@ -51,6 +51,6 @@ for i in range(5):
     mybuzzer.sound(254)
     gopigo.left_rot()
     time.sleep(5)
-    mybuzzer.soundoff()
+    mybuzzer.sound_off()
     time.sleep(1)
 

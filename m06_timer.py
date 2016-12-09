@@ -7,7 +7,7 @@ import atexit
 @atexit.register
 def cleanup():
     gopigo.stop()
-    mybuzzer.soundoff()
+    mybuzzer.sound_off()
     
 # let's create a software buzzer so we can control it
 mybuzzer = Buzzer()    
@@ -25,7 +25,7 @@ for i in range(5):
     mybuzzer.sound(254)
     left_rot()   # this line will make the robot spin in place
     sleep(5)
-    mybuzzer.soundoff()
+    mybuzzer.sound_off()
     stop()
     sleep(1)
 

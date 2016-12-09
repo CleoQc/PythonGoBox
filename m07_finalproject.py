@@ -11,9 +11,9 @@ def cleanup():
     # were switched on
     print ("giving the answer")
     for x in range(count):
-        myled.lighton(255)
+        myled.light_on(255)
         sleep(0.5)
-        myled.lightoff()
+        myled.light_off()
         sleep(0.5)
 
 # this is our variable that keeps count of how many times the lights were turned on

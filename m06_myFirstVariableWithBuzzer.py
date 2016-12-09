@@ -6,11 +6,11 @@ import atexit
 @atexit.register
 def cleanup():
     gopigo.stop()
-    my_buzzer.soundoff()
+    my_buzzer.sound_off()
 
 # let's create a buzzer on port D11
 my_buzzer = gobox.Buzzer("D11")
-my_buzzer.soundoff()
+my_buzzer.sound_off()
 
 
 # the range function starts with the first number, 

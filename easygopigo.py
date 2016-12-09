@@ -7,6 +7,7 @@ import sys
 import tty
 import select
 import gopigo
+from threading import Thread
 
 old_settings=''
 fd=''
@@ -89,7 +90,22 @@ class DigitalSensor(Sensor):
         Sensor.__init__(self,port,pinmode)
 
     def read(self):
-        return str(gopigo.digitalRead(self.getPortID()))
+        '''
+        tries to get a value up to 10 times. As soon as a valid value is read, it returns either 0 or 1
+        returns -1 after 10 unsuccessful tries
+        '''
+        okay = False
+        error_count = 0
+        while not okay and error_count < 10:
+            try:
+                rtn  =  int(gopigo.digitalRead(self.getPortID()))
+                okay = True
+            except:
+                error_count += 1
+        if error_count > 10:
+            return -1
+        else:
+            return rtn
 
     def write(self,power):
         self.value = power
@@ -196,17 +212,17 @@ class Led(AnalogSensor):
         AnalogSensor.__init__(self,port,"OUTPUT")
         self.set_descriptor("LED")
         
-    def lighton(self,power):
+    def light_on(self,power):
         AnalogSensor.write(self,power)
         self.value = power
         
-    def lightoff(self):
+    def light_off(self):
         AnalogSensor.write(self,0)
         
-    def ison(self):
+    def is_on(self):
         return (self.value>0)
     
-    def isoff(self):
+    def is_off(self):
         return (self.value==0)
         
 
@@ -216,8 +232,14 @@ class MotionSensor(DigitalSensor):
         DigitalSensor.__init__(self,port,"INPUT")
         self.set_descriptor("Motion Sensor")
 
+class ButtonSensor(DigitalSensor):
 
+
+    def __init__(self,port="D11"):
+        DigitalSensor.__init__(self,port,"INPUT")
+        self.set_descriptor("Button sensor")
         
+      
 
 ##########################
 if __name__ == '__main__':
