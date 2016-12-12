@@ -2,9 +2,6 @@ from easygopigo import *
 from gopigo import *
 from time import sleep
 
-
-import ir_receiver
-
 import atexit               # library that will give us a nice exit
 
 # this registers a function that will be called
@@ -20,19 +17,13 @@ def cleanup():
 # you may want to change it to get it more sensitive, or less
 distance_to_stop=20
 
+# name the ultrasonic sensor
+my_distance = UltraSonicSensor("A1")
+# set our safe distance
+my_distance.set_safe_distance(20)
 
-def safe_in_front():
-    '''
-    We create our own function to check the distance sensor
-    It will return either True or False after
-        checking for an object in front.
-    '''
-    if us_dist(15) <= distance_to_stop:
-    # oh oh, danger! danger! Stop
-        return False
-    else:
-        return True
-
+my_remote = Remote("SERIAL")
+print my_remote
 
 
 print "Press any button on the remote to control the GoPiGo"
@@ -46,17 +37,18 @@ while True:
     # the GoPiGo will stop if the cat walks in front of it while
     #   it's going backward
     # your chosen behavior may be different
-    if not safe_in_front():
+    if my_distance.is_too_close():
         stop()
 
-    code = ir_receiver.nextcode()
+    code = my_remote.get_remote_code()
 
     # if  we didn't receive a code, loop right away
     if len(code) != 0:
 
         if code == 'KEY_UP':
             # check if it's safe to go forward first.
-            if safe_in_front():
+            # the distance 
+            if not my_distance.is_too_close():
                 forward()
         elif code == 'KEY_DOWN':
             backward()
