@@ -1,13 +1,13 @@
 from easygopigo import *
 from gopigo import *
 from time import sleep
-
 import atexit               # library that will give us a nice exit
 
+
+@atexit.register
 # this registers a function that will be called
 # each time the code ends, and regardless
 # of why it ends (intentional or not)
-@atexit.register
 def cleanup():
     stop()  # we want the gopigo to stop
     print ("Good bye!")
@@ -15,7 +15,7 @@ def cleanup():
 
 # this is a variable that holds our security distance
 # you may want to change it to get it more sensitive, or less
-distance_to_stop=20
+distance_to_stop = 20
 
 # name the ultrasonic sensor
 my_distance = UltraSonicSensor("A1")
@@ -23,9 +23,14 @@ my_distance = UltraSonicSensor("A1")
 my_distance.set_safe_distance(20)
 
 my_remote = Remote("SERIAL")
-print my_remote
+print (my_remote.is_enabled())
 
+# this is strictly to ensure that the IR Receiver is enabled
+# we quit rather abruptly
+if not my_remote.is_enabled():
+    exit()
 
+# Give user some information on what to do
 print "Press any button on the remote to control the GoPiGo"
 print "Use the * or the # to end the program"
 
@@ -42,24 +47,22 @@ while True:
 
     code = my_remote.get_remote_code()
 
-    # if  we didn't receive a code, loop right away
+    # handle the key presses and control the GoPiGo
     if len(code) != 0:
-
         if code == 'KEY_UP':
             # check if it's safe to go forward first.
-            # the distance 
+            # the distance
             if not my_distance.is_too_close():
                 forward()
         elif code == 'KEY_DOWN':
             backward()
         elif code == 'KEY_OK':
             stop()
-        elif code=="KEY_LEFT":
+        elif code == "KEY_LEFT":
             left()
-        elif code=="KEY_RIGHT":
+        elif code == "KEY_RIGHT":
             right()
         elif code == 'KEY_H' or code == 'KEY_S':
             exit(0)
 
     sleep(0.1)
-

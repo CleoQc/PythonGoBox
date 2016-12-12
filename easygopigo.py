@@ -7,7 +7,13 @@ import sys
 import tty
 import select
 import gopigo
-import ir_receiver
+try:
+    import ir_receiver
+    import ir_receiver_check
+    IR_RECEIVER_ENABLED = True
+except:
+    IR_RECEIVER_ENABLED = False
+
 
 
 old_settings = ''
@@ -279,9 +285,16 @@ class ButtonSensor(DigitalSensor):
 class Remote(Sensor):
 
     def __init__(self, port):
+        global IR_RECEIVER_ENABLED
         Sensor.__init__(self, port, "SERIAL")
         self.set_descriptor("Remote Control")
+        if ir_receiver_check.check_ir() == 0:
+            print("*** Error with the Remote Controller")
+            print("*** Please enable the IR Receiver in the Advanced Comms tool")
+            IR_RECEIVER_ENABLED = False
 
+    def is_enabled(self):
+        return IR_RECEIVER_ENABLED
 
     def get_remote_code(self):
         '''
@@ -289,8 +302,15 @@ class Remote(Sensor):
         No preprocessing
         You have to check that length > 0
             before handling the code value
+        if the IR Receiver is not enabled, this will return -1
         '''
-        return ir_receiver.nextcode()
+        if IR_RECEIVER_ENABLED:
+            return ir_receiver.nextcode()
+        else:
+            print("Error with the Remote Controller")
+            print("Please enable the IR Receiver in the Advanced Comms tool")
+            return -1
+
 
 
 
