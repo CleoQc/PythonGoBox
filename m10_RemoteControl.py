@@ -23,7 +23,6 @@ my_distance = UltraSonicSensor("A1")
 my_distance.set_safe_distance(20)
 
 my_remote = Remote("SERIAL")
-print (my_remote.is_enabled())
 
 # this is strictly to ensure that the IR Receiver is enabled
 # we quit rather abruptly
@@ -48,7 +47,7 @@ while True:
     code = my_remote.get_remote_code()
 
     # handle the key presses and control the GoPiGo
-    if len(code) != 0:
+    if code != -1 and len(code) != 0:
         if code == 'KEY_UP':
             # check if it's safe to go forward first.
             # the distance
