@@ -7,13 +7,18 @@ import sys
 import tty
 import select
 import gopigo
+
+sys.path.insert(0, '/home/pi/Desktop/GoPiGo/Software/Python/line_follower')
+import line_sensor
+import scratch_line
+
+# IR Receiver
 try:
     import ir_receiver
     import ir_receiver_check
     IR_RECEIVER_ENABLED = True
 except:
     IR_RECEIVER_ENABLED = False
-
 
 
 old_settings = ''
@@ -34,14 +39,16 @@ def debug(in_str):
 # on the date of gopigo.py
 #############################################################
 try:
-    PORTS = {"A1": gopigo.analogPort, "D11": gopigo.digitalPort, "SERIAL": -1}
+    PORTS = {"A1": gopigo.analogPort, "D11": gopigo.digitalPort,
+             "SERIAL": -1, "I2C": -2}
 except:
-    PORTS = {"A1": 15, "D11": 10, "SERIAL": -1}
+    PORTS = {"A1": 15, "D11": 10, "SERIAL": -1, "I2C": -2}
 
 
 ANALOG = 1
 DIGITAL = 0
 SERIAL = -1
+I2C = -2
 
 ##########################
 
@@ -196,7 +203,7 @@ class UltraSonicSensor(AnalogSensor):
             return True
         return False
 
-    def set_safe_distance(self,dist):
+    def set_safe_distance(self, dist):
         self.safe_distance = int(dist)
 
     def get_safe_distance(self):
@@ -282,16 +289,19 @@ class ButtonSensor(DigitalSensor):
         self.set_descriptor("Button sensor")
 ##########################
 
+
 class Remote(Sensor):
 
     def __init__(self, port):
         global IR_RECEIVER_ENABLED
-        Sensor.__init__(self, port, "SERIAL")
-        self.set_descriptor("Remote Control")
+
         if ir_receiver_check.check_ir() == 0:
             print("*** Error with the Remote Controller")
-            print("*** Please enable the IR Receiver in the Advanced Comms tool")
+            print("Please enable the IR Receiver in the Advanced Comms tool")
             IR_RECEIVER_ENABLED = False
+        else:
+            Sensor.__init__(self, port, "SERIAL")
+            self.set_descriptor("Remote Control")
 
     def is_enabled(self):
         return IR_RECEIVER_ENABLED
@@ -310,9 +320,81 @@ class Remote(Sensor):
             print("Error with the Remote Controller")
             print("Please enable the IR Receiver in the Advanced Comms tool")
             return -1
+##########################
 
 
+class LineFollower(Sensor):
+    '''
+    The line follower detects the presence of a black line or its 
+      absence.
+    You can use this in one of three ways.
+    1. You can use read_position() to get a simple position status:
+        center, left or right. 
+        these indicate the position of the black line. 
+        So if it says left, the GoPiGo has to turn right
+    2. You can use read() to get a list of the five sensors.
+        each position in the list will either be a 0 or a 1
+        It is up to you to determine where the black line is.
+    3. You can use read_raw_sensors() to get raw values from all sensors
+        You will have to handle the calibration yourself
+    '''
 
+    def __init__(self, port):
+        Sensor.__init__(self, port, "I2C")
+        self.set_descriptor("Line Follower")
+
+    def read_raw_sensors(self):
+        '''
+        Returns raw values from all sensors
+        From 0 to 1023
+        May return a list of -1 when there's a read error
+        '''
+        five_vals = line_sensor.read_sensor()
+        if five_vals != -1:
+            return five_vals
+        else:
+            return [-1, -1, -1, -1, -1]
+
+    def read(self):
+        '''
+        Returns a list of 5 values between 0 and 1
+        Depends on the line sensor being calibrated first 
+            through the Line Sensor Calibration tool
+        May return all -1 on a read error
+        '''
+        five_vals = scratch_line.absolute_line_pos()
+        return five_vals
+
+    def read_position(self):
+        '''
+        Returns a string telling where the black line is, compared to 
+            the GoPiGo
+        Returns: "Left", "Right", "Center", "Black", "White"
+        May return "Unknown"
+        This method is not intelligent enough to handle intersections.
+        '''
+        five_vals = self.read()
+        if five_vals == [0, 0, 1, 0, 0] or five_vals == [0, 1, 1, 1, 0]:
+            return "Center"
+        if five_vals == [1, 1, 1, 1, 1]:
+            return "Black"
+        if five_vals == [0, 0, 0, 0, 0]:
+            return "White"
+        if five_vals == [0, 1, 1, 0, 0] or \
+           five_vals == [0, 1, 0, 0, 0] or \
+           five_vals == [1, 0, 0, 0, 0] or \
+           five_vals == [1, 1, 0, 0, 0] or \
+           five_vals == [1, 1, 1, 0, 0] or \
+           five_vals == [1, 1, 1, 1, 0]:
+            return "Left"
+        if five_vals == [0, 0, 0, 1, 0] or \
+           five_vals == [0, 0, 1, 1, 0] or \
+           five_vals == [0, 0, 0, 0, 1] or \
+           five_vals == [0, 0, 0, 1, 1] or \
+           five_vals == [0, 0, 1, 1, 1] or \
+           five_vals == [0, 1, 1, 1, 1]:
+            return "Right"
+        return "Unknown"
 
 if __name__ == '__main__':
     import time
