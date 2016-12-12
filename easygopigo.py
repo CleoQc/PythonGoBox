@@ -7,7 +7,8 @@ import sys
 import tty
 import select
 import gopigo
-from threading import Thread
+import ir_receiver
+
 
 old_settings = ''
 fd = ''
@@ -27,12 +28,14 @@ def debug(in_str):
 # on the date of gopigo.py
 #############################################################
 try:
-    PORTS = {"A1": gopigo.analogPort, "D11": gopigo.digitalPort}
+    PORTS = {"A1": gopigo.analogPort, "D11": gopigo.digitalPort, "SERIAL": -1}
 except:
-    PORTS = {"A1": 15, "D11": 10}
+    PORTS = {"A1": 15, "D11": 10, "SERIAL": -1}
+
 
 ANALOG = 1
 DIGITAL = 0
+SERIAL = -1
 
 ##########################
 
@@ -55,13 +58,14 @@ class Sensor():
     def __init__(self, port, pinmode):
         '''
         port = one of PORTS keys
-        pinmode = "INPUT", "OUTPUT"
+        pinmode = "INPUT", "OUTPUT", "SERIAL" (which gets ignored)
         '''
         debug("Sensor init")
         debug(pinmode)
         self.setPort(port)
         self.setPinMode(pinmode)
-        gopigo.pinMode(self.getPortID(), self.getPinMode())
+        if pinmode == "INPUT" or pinmode == "OUTPUT":
+            gopigo.pinMode(self.getPortID(), self.getPinMode())
 
     def __str__(self):
         return ("{} on port {}".format(self.descriptor, self.getPort()))
@@ -178,7 +182,19 @@ class UltraSonicSensor(AnalogSensor):
     def __init__(self, port="A1"):
         debug("Ultrasonic Sensor on port "+port)
         AnalogSensor.__init__(self, port, "INPUT")
+        self.safe_distance = 500
         self.set_descriptor("Ultrasonic sensor")
+
+    def is_too_close(self):
+        if gopigo.us_dist(PORTS[self.port]) < self.get_safe_distance():
+            return True
+        return False
+
+    def set_safe_distance(self,dist):
+        self.safe_distance = int(dist)
+
+    def get_safe_distance(self):
+        return self.safe_distance
 
     def read(self):
         return gopigo.us_dist(PORTS[self.port])
@@ -259,6 +275,23 @@ class ButtonSensor(DigitalSensor):
         DigitalSensor.__init__(self, port, "INPUT")
         self.set_descriptor("Button sensor")
 ##########################
+
+class Remote(Sensor):
+
+    def __init__(self, port):
+        Sensor.__init__(self, port, "SERIAL")
+        self.set_descriptor("Remote Control")
+
+
+    def get_remote_code(self):
+        '''
+        Returns the keycode from the remote control
+        No preprocessing
+        You have to check that length > 0
+            before handling the code value
+        '''
+        return ir_receiver.nextcode()
+
 
 
 if __name__ == '__main__':
