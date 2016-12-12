@@ -2,10 +2,6 @@
 # this morse code generator uses new concepts: 
 # 
 ########################################################################
-from __future__ import print_function
-from __future__ import division
-from builtins import input
-
 from easygopigo import *
 from gopigo import *
 from time import sleep
